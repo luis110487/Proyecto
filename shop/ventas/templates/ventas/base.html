@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+{% load static %}
+<head>
+  <meta charset="UTF-8">
+  <title>Tienda Online - ShopZone</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+  <header>
+    <h1>Shop</h1>
+    <nav style="float: right;">
+            {% if user.is_authenticated %}
+    <p>Bienvenido, {{ user.username }}</p>
+   <a href="{% url 'admin_dashboard' %}" class="btn btn-primary">Ir al Panel de Administración</a>
+    <a href="{% url 'logout' %}" class="btn btn-danger">Cerrar Sesión</a>
+    {% else %}
+    <a href="{% url 'login' %}" class="btn btn-success">Iniciar Sesión</a>
+    {% endif %}
+    </nav>
+    <nav>
+      <a href="{% url 'catalogo_productos' %}">Catálogo</a> |
+            <li class="nav-item">
+    
+</li>
+
+  
+    </nav>
+    
+    
+  </header>
+
+  <hr>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <hr>
+    <p>&copy; 2025 Shop - Sistema Web de Ventas</p>
+  </footer>
+</body>
+</html>
