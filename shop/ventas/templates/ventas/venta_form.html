@@ -1,0 +1,346 @@
+{% extends 'ventas/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            <div class="form-card card border-0 shadow-lg">
+                <div class="card-header form-header">
+                    <div class="header-content">
+                        <i class="fas fa-cash-register me-2"></i>
+                        <h3 class="mb-0">{{ titulo }}</h3>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-triangle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Formulario para agregar productos (NO necesita validar cliente) -->
+                    <form method="post" id="agregar-producto-form">
+                        {% csrf_token %}
+                        
+                        <!-- Agregar Productos -->
+                        <div class="form-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-cart-plus me-2"></i>
+                                Agregar Productos a la Venta
+                            </h5>
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-5">
+                                    <label class="form-label">Producto *</label>
+                                    <select name="producto" class="form-control producto-select" required id="producto-select">
+                                        <option value="">Seleccione un producto</option>
+                                        {% for producto in productos %}
+                                        <option value="{{ producto.id }}" 
+                                                data-precio="{{ producto.precio_unitario }}" 
+                                                data-stock="{{ producto.stock }}"
+                                                data-nombre="{{ producto.nombre }}">
+                                            {{ producto.nombre }} - Stock: {{ producto.stock }} - ${{ producto.precio_unitario }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Cantidad *</label>
+                                    <input type="number" name="cantidad" class="form-control cantidad-input" value="1" min="1" required id="cantidad-input">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Precio Venta *</label>
+                                    <input type="number" name="precio_venta" class="form-control precio-input" step="0.01" min="0.01" required id="precio-input">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button type="submit" name="agregar_producto" class="btn btn-success w-100" id="btn-agregar">
+                                        <i class="fas fa-plus-circle me-2"></i>Agregar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <small class="text-muted" id="stock-info"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Formulario principal para guardar la venta -->
+                    <form method="post" id="venta-form">
+                        {% csrf_token %}
+                        
+                        <!-- Información de la Venta -->
+                        <div class="form-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Información de la Venta
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Cliente *</label>
+                                    {{ form.cliente }}
+                                    {% if form.cliente.errors %}
+                                        <div class="text-danger small">{{ form.cliente.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Estado</label>
+                                    {{ form.estado }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Observaciones</label>
+                                    {{ form.observaciones }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Productos Agregados -->
+                        {% if items_venta %}
+                        <div class="form-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-list me-2"></i>
+                                Productos en la Venta
+                                <span class="badge bg-primary ms-2">{{ items_venta|length }}</span>
+                            </h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Precio Unitario</th>
+                                            <th>Cantidad</th>
+                                            <th>Subtotal</th>
+                                            <th class="text-center">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in items_venta %}
+                                        <tr>
+                                            <td>{{ item.producto.nombre }}</td>
+                                            <td>${{ item.precio_venta }}</td>
+                                            <td>{{ item.cantidad }}</td>
+                                            <td class="price-cell">${{ item.subtotal }}</td>
+                                            <td class="text-center">
+                                                <a href="/ventas/eliminar-producto/{{ forloop.counter0 }}/" 
+                                                   class="btn btn-danger btn-sm"
+                                                   onclick="return confirm('¿Eliminar este producto de la venta?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-secondary">
+                                        <tr>
+                                            <td colspan="3" class="text-end fw-bold">Total Venta:</td>
+                                            <td colspan="2" class="fw-bold text-success">${{ total_venta }}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="text-end">
+                                <a href="/ventas/limpiar/" class="btn btn-warning">
+                                    <i class="fas fa-broom me-2"></i>Limpiar Todo
+                                </a>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="form-section">
+                            <div class="text-center py-4">
+                                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                                <h6 class="text-muted">No hay productos en la venta</h6>
+                                <p class="text-muted small">Agrega productos usando el formulario superior</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="form-actions">
+                            <a href="{% url 'venta_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancelar
+                            </a>
+                            {% if items_venta %}
+                            <button type="submit" name="guardar_venta" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Guardar Venta
+                            </button>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.form-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 1.5rem 2rem;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+}
+
+.form-header i {
+    font-size: 1.5rem;
+}
+
+.form-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #667eea;
+}
+
+.section-title {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn {
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+}
+
+.price-cell {
+    font-weight: 600;
+    color: #28a745;
+}
+
+.stock-warning {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.stock-ok {
+    color: #28a745;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productoSelect = document.getElementById('producto-select');
+    const cantidadInput = document.getElementById('cantidad-input');
+    const precioInput = document.getElementById('precio-input');
+    const stockInfo = document.getElementById('stock-info');
+    const btnAgregar = document.getElementById('btn-agregar');
+
+    function actualizarInfoProducto() {
+        const selectedOption = productoSelect.options[productoSelect.selectedIndex];
+        const precio = selectedOption.getAttribute('data-precio');
+        const stock = selectedOption.getAttribute('data-stock');
+        const nombre = selectedOption.getAttribute('data-nombre');
+        
+        if (precio && stock) {
+            precioInput.value = precio;
+            
+            const cantidad = parseInt(cantidadInput.value) || 1;
+            const stockDisponible = parseInt(stock);
+            
+            if (cantidad > stockDisponible) {
+                stockInfo.innerHTML = `<span class="stock-warning"><i class="fas fa-exclamation-triangle"></i> Stock insuficiente. Máximo disponible: ${stockDisponible}</span>`;
+                btnAgregar.disabled = true;
+                btnAgregar.classList.add('btn-secondary');
+                btnAgregar.classList.remove('btn-success');
+            } else {
+                stockInfo.innerHTML = `<span class="stock-ok"><i class="fas fa-check-circle"></i> Stock disponible: ${stockDisponible}</span>`;
+                btnAgregar.disabled = false;
+                btnAgregar.classList.remove('btn-secondary');
+                btnAgregar.classList.add('btn-success');
+            }
+        } else {
+            stockInfo.innerHTML = '';
+            btnAgregar.disabled = false;
+            btnAgregar.classList.remove('btn-secondary');
+            btnAgregar.classList.add('btn-success');
+        }
+    }
+
+    productoSelect.addEventListener('change', actualizarInfoProducto);
+    cantidadInput.addEventListener('input', actualizarInfoProducto);
+
+    // Validar formulario de agregar producto
+    document.getElementById('agregar-producto-form').addEventListener('submit', function(e) {
+        const producto = productoSelect.value;
+        const cantidad = cantidadInput.value;
+        const precio = precioInput.value;
+
+        if (!producto || !cantidad || !precio) {
+            e.preventDefault();
+            alert('Por favor complete todos los campos del producto');
+            return false;
+        }
+
+        // Validar stock
+        const selectedOption = productoSelect.options[productoSelect.selectedIndex];
+        const stock = parseInt(selectedOption.getAttribute('data-stock'));
+        const cantidadInt = parseInt(cantidad);
+
+        if (cantidadInt > stock) {
+            e.preventDefault();
+            alert(`Stock insuficiente. Solo hay ${stock} unidades disponibles.`);
+            return false;
+        }
+
+        return true;
+    });
+
+    // Inicializar
+    actualizarInfoProducto();
+});
+</script>
+{% endblock %}

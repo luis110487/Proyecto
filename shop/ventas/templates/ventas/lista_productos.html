@@ -1,0 +1,193 @@
+{% extends 'ventas/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-12 col-lg-10">
+            <div class="page-header card border-0 shadow-lg">
+                <div class="card-body text-center p-5">
+                    <div class="header-icon mb-3">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <h1 class="page-title mb-2">Gestión de Productos</h1>
+                    <p class="page-subtitle">Administra tu inventario y catálogo de productos</p>
+                    <a href="{% url 'crear_producto' %}" class="btn btn-primary btn-lg mt-3">
+                        <i class="fas fa-plus-circle me-2"></i>Nuevo Producto
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            <div class="main-card card border-0 shadow">
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-triangle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if productos %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Imagen</th>
+                                    <th>Producto</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Categoría</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for producto in productos %}
+                                <tr class="product-row">
+                                    <td>
+                                        {% if producto.imagen %}
+                                            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" 
+                                                 class="product-img rounded" width="50" height="50">
+                                        {% else %}
+                                            <div class="no-img-placeholder">
+                                                <i class="fas fa-image"></i>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ producto.nombre }}</strong>
+                                        {% if producto.descripcion %}
+                                        <br><small class="text-muted">{{ producto.descripcion|truncatewords:5 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="price-cell">${{ producto.precio_unitario }}</td>
+                                    <td>
+                                        <span class="stock-badge {% if producto.stock > 10 %}stock-high{% else %}stock-low{% endif %}">
+                                            {{ producto.stock }}
+                                        </span>
+                                    </td>
+                                    <td>{{ producto.categoria.nombre }}</td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'editar_producto' producto.id %}" class="btn btn-warning btn-sm" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'eliminar_producto' producto.id %}" class="btn btn-danger btn-sm" title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay productos registrados</h5>
+                        <p class="text-muted">Comienza agregando tu primer producto al catálogo</p>
+                        <a href="{% url 'crear_producto' %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-2"></i>Agregar Primer Producto
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.page-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header-icon {
+    font-size: 3rem;
+    color: #667eea;
+}
+
+.page-title {
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.page-subtitle {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+.main-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.product-row {
+    transition: all 0.3s ease;
+}
+
+.product-row:hover {
+    background-color: rgba(102, 126, 234, 0.05);
+    transform: translateX(5px);
+}
+
+.product-img {
+    object-fit: cover;
+}
+
+.no-img-placeholder {
+    width: 50px;
+    height: 50px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+.price-cell {
+    font-weight: 600;
+    color: #28a745;
+}
+
+.stock-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.stock-high {
+    background: #d4edda;
+    color: #155724;
+}
+
+.stock-low {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.btn-group .btn {
+    border-radius: 8px;
+    margin: 0 2px;
+}
+</style>
+{% endblock %}

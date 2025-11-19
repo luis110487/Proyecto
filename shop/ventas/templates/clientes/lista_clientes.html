@@ -1,0 +1,152 @@
+{% extends 'ventas/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-12 col-lg-10">
+            <div class="page-header card border-0 shadow-lg">
+                <div class="card-body text-center p-5">
+                    <div class="header-icon mb-3">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h1 class="page-title mb-2">Gestión de Clientes</h1>
+                    <p class="page-subtitle">Administra tu base de datos de clientes</p>
+                    <a href="{% url 'crear_cliente' %}" class="btn btn-primary btn-lg mt-3">
+                        <i class="fas fa-plus-circle me-2"></i>Nuevo Cliente
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            <div class="main-card card border-0 shadow">
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-triangle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if clientes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Contacto</th>
+                                    <th>Dirección</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cliente in clientes %}
+                                <tr class="client-row">
+                                    <td>
+                                        <div class="client-info">
+                                            <div class="client-avatar">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            <div class="client-details">
+                                                <strong>{{ cliente.nombre }}</strong>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if cliente.email %}
+                                        <div class="contact-item">
+                                            <i class="fas fa-envelope me-2"></i>
+                                            {{ cliente.email }}
+                                        </div>
+                                        {% endif %}
+                                        {% if cliente.telefono %}
+                                        <div class="contact-item">
+                                            <i class="fas fa-phone me-2"></i>
+                                            {{ cliente.telefono }}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if cliente.direccion %}
+                                        <span class="address-text">{{ cliente.direccion|truncatewords:8 }}</span>
+                                        {% else %}
+                                        <span class="text-muted">No especificada</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-warning btn-sm" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'eliminar_cliente' cliente.id %}" class="btn btn-danger btn-sm" title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay clientes registrados</h5>
+                        <p class="text-muted">Comienza agregando tu primer cliente</p>
+                        <a href="{% url 'crear_cliente' %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-2"></i>Agregar Primer Cliente
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.client-row {
+    transition: all 0.3s ease;
+}
+
+.client-row:hover {
+    background-color: rgba(102, 126, 234, 0.05);
+    transform: translateX(5px);
+}
+
+.client-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.client-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.contact-item {
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.address-text {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+</style>
+{% endblock %}

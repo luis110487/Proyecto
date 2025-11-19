@@ -1,0 +1,192 @@
+{% extends 'ventas/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="form-card card border-0 shadow-lg">
+                <div class="card-header form-header">
+                    <div class="header-content">
+                        <i class="fas fa-edit me-2"></i>
+                        <h3 class="mb-0">Editar Venta #{{ venta.id }}</h3>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-triangle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Información de la Venta
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Cliente *</label>
+                                    {{ form.cliente }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Estado</label>
+                                    {{ form.estado }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Observaciones</label>
+                                    {{ form.observaciones }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información de Productos Existente -->
+                        <div class="form-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-boxes me-2"></i>
+                                Productos en esta Venta
+                            </h5>
+                            {% if venta.detalleventa_set.all %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th>Precio Venta</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for detalle in venta.detalleventa_set.all %}
+                                        <tr>
+                                            <td>{{ detalle.producto.nombre }}</td>
+                                            <td>{{ detalle.cantidad }}</td>
+                                            <td>${{ detalle.precio_venta }}</td>
+                                            <td class="price-cell">${{ detalle.subtotal }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-secondary">
+                                        <tr>
+                                            <td colspan="3" class="text-end fw-bold">Total:</td>
+                                            <td class="fw-bold text-success">${{ venta.total }}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-3">
+                                <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">No hay productos en esta venta</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-actions">
+                            <a href="{% url 'venta_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Volver a Ventas
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Actualizar Venta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.form-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 1.5rem 2rem;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+}
+
+.form-header i {
+    font-size: 1.5rem;
+}
+
+.form-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #667eea;
+}
+
+.section-title {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn {
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+}
+
+.price-cell {
+    font-weight: 600;
+    color: #28a745;
+}
+</style>
+{% endblock %}

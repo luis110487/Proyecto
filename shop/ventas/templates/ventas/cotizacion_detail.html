@@ -1,0 +1,191 @@
+{% extends 'ventas/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            <div class="detail-card card border-0 shadow-lg">
+                <div class="card-header detail-header">
+                    <div class="header-content">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>
+                        <h3 class="mb-0">Cotización #{{ cotizacion.id }}</h3>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Información General -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="info-card card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">Información de la Cotización</h6>
+                                    <div class="info-item">
+                                        <strong>Cliente:</strong> {{ cotizacion.cliente.nombre }}
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Fecha:</strong> {{ cotizacion.fecha }}
+                                    </div>
+                                    {% if cotizacion.observaciones %}
+                                    <div class="info-item">
+                                        <strong>Observaciones:</strong> {{ cotizacion.observaciones }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="summary-card card border-0 bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Total de la Cotización</h6>
+                                    <h2 class="total-amount">${{ cotizacion.total }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detalles de Productos -->
+                    <div class="products-section">
+                        <h5 class="section-title mb-4">
+                            <i class="fas fa-boxes me-2"></i>
+                            Productos Cotizados
+                        </h5>
+                        
+                        {% if detalles %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th class="text-center">Cantidad</th>
+                                        <th class="text-end">Precio Unitario</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for detalle in detalles %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ detalle.producto.nombre }}</strong>
+                                            {% if detalle.producto.descripcion %}
+                                            <br><small class="text-muted">{{ detalle.producto.descripcion }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">{{ detalle.cantidad }}</td>
+                                        <td class="text-end">${{ detalle.producto.precio_unitario }}</td>
+                                        <td class="text-end price-cell">${{ detalle.subtotal }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot class="table-secondary">
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold fs-5">Total:</td>
+                                        <td class="text-end fw-bold fs-5 text-success">${{ total_manual }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay productos en esta cotización</h5>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="detail-actions mt-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{% url 'cotizacion_list' %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Volver a Cotizaciones
+                                </a>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <a href="{% url 'cotizacion_update' cotizacion.pk %}" class="btn btn-warning me-2">
+                                    <i class="fas fa-edit me-2"></i>Editar
+                                </a>
+                                <a href="{% url 'cotizacion_delete' cotizacion.pk %}" class="btn btn-danger">
+                                    <i class="fas fa-trash me-2"></i>Eliminar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.detail-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.detail-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 1.5rem 2rem;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+}
+
+.detail-header i {
+    font-size: 1.5rem;
+}
+
+.info-card {
+    border-radius: 12px;
+    height: 100%;
+}
+
+.info-item {
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+.summary-card {
+    border-radius: 12px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.total-amount {
+    font-weight: 700;
+    margin: 0;
+}
+
+.section-title {
+    color: #495057;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.price-cell {
+    font-weight: 600;
+    color: #28a745;
+}
+
+.detail-actions .btn {
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.detail-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+}
+</style>
+{% endblock %}
